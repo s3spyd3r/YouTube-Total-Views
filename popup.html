@@ -1,0 +1,29 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>YouTube Total Views</title>
+<style>
+body { font-family: Arial; width: 250px; padding: 12px; }
+select { width: 100%; padding: 8px; margin-top: 10px; }
+button { width: 100%; padding: 8px; margin-top: 10px; cursor: pointer; }
+#result { margin-top: 12px; font-weight: bold; font-size: 18px; }
+</style>
+</head>
+<body>
+
+<h3>Total Channel Views</h3>
+
+<div>
+    <label for="language">Language:</label>
+    <select id="language">
+        <option value="en">English</option>
+        <option value="pt">Portuguese</option>
+    </select>
+</div>
+
+<button id="refresh">Refresh</button>
+<div id="result">Waiting...</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
