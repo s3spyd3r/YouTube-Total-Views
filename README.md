@@ -9,8 +9,8 @@ The extension injects a content script into the YouTube page. When the user open
 ## Images
 
 <p float="left">
-	<img src="https://raw.githubusercontent.com/s3spyd3r/YouTube-Total-Views/refs/heads/main/Images/1.png" width="100">
-	<img src="https://raw.githubusercontent.com/s3spyd3r/YouTube-Total-Views/refs/heads/main/Images/2.png" width="100">
+	<img src="https://raw.githubusercontent.com/s3spyd3r/YouTube-Total-Views/refs/heads/main/Images/1.png" width="300">
+	<img src="https://raw.githubusercontent.com/s3spyd3r/YouTube-Total-Views/refs/heads/main/Images/2.png" width="300">
 </p>
 
 
