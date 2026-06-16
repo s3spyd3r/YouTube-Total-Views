@@ -1,52 +1,91 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+    const channelEl = document.getElementById('channel');
     const resultEl = document.getElementById('result');
     const refreshBtn = document.getElementById('refresh');
-    const languageSelect = document.getElementById('language');
 
-    // Load saved language and set the dropdown
-    chrome.storage.sync.get(['language'], (result) => {
-        if (result.language) {
-            languageSelect.value = result.language;
+    try {
+        const stored = await chrome.storage.sync.get(['channel']);
+        if (stored.channel) channelEl.value = stored.channel;
+    } catch (e) {
+        console.error('Failed to load saved channel:', e);
+    }
+
+    channelEl.addEventListener('input', () => {
+        chrome.storage.sync.set({ channel: channelEl.value.trim() }).catch(err => {
+            console.error('Failed to save channel:', err);
+        });
+    });
+
+    function waitForTabLoad(tabId, timeoutMs = 10000) {
+        return new Promise((resolve) => {
+            const timeoutId = setTimeout(() => {
+                chrome.tabs.onUpdated.removeListener(listener);
+                resolve();
+            }, timeoutMs);
+            const listener = (updatedTabId, changeInfo) => {
+                if (updatedTabId === tabId && changeInfo.status === 'complete') {
+                    clearTimeout(timeoutId);
+                    chrome.tabs.onUpdated.removeListener(listener);
+                    resolve();
+                }
+            };
+            chrome.tabs.onUpdated.addListener(listener);
+        });
+    }
+
+    function sleep(ms) {
+        return new Promise(r => setTimeout(r, ms));
+    }
+
+    async function sendMessageWithRetry(tabId, message) {
+        for (let i = 0; i < 5; i++) {
+            try {
+                const response = await chrome.tabs.sendMessage(tabId, message);
+                if (response) return response;
+            } catch (e) {
+                // Content script not ready yet, retry
+            }
+            await sleep(300);
         }
-        // Automatically start on popup open
-        getTotalViews();
-    });
-
-    // Save language on change
-    languageSelect.addEventListener('change', () => {
-        chrome.storage.sync.set({ language: languageSelect.value });
-    });
+        return null;
+    }
 
     async function getTotalViews() {
+        const channel = channelEl.value.trim();
+        if (!channel) {
+            resultEl.innerText = "Enter a channel handle.";
+            return;
+        }
+
         refreshBtn.disabled = true;
-        resultEl.innerText = "Calculating... Please wait while scrolling...";
+        resultEl.innerText = "Calculating...";
 
+        let tab = null;
         try {
-            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            const aboutUrl = `https://www.youtube.com/@${encodeURIComponent(channel)}/about`;
+            tab = await chrome.tabs.create({ url: aboutUrl, active: false });
+            await waitForTabLoad(tab.id);
 
-            if (!tab.url || !tab.url.includes("youtube.com")) {
-                resultEl.innerText = "Navigate to a YouTube page.";
-                refreshBtn.disabled = false;
-                return;
-            }
-
-            const selectedLanguage = languageSelect.value;
-            const response = await chrome.tabs.sendMessage(tab.id, {
-                action: "scrapeAllViews",
-                language: selectedLanguage
-            });
+            const response = await sendMessageWithRetry(tab.id, { action: "scrapeChannel" });
 
             if (response && response.error) {
                 resultEl.innerText = `Error: ${response.error}`;
-            } else if (response) {
+            } else if (response && typeof response.totalViews === 'number') {
                 resultEl.innerText = `${response.totalViews.toLocaleString()} views`;
             } else {
-                 resultEl.innerText = "Error: No response from content script.";
+                resultEl.innerText = "Error: No response from content script.";
             }
         } catch (err) {
             console.error("Error in popup:", err);
-            resultEl.innerText = "Error: Could not communicate with the page. Try refreshing the YouTube tab.";
+            resultEl.innerText = "Error: Could not fetch channel.";
         } finally {
+            if (tab) {
+                try {
+                    await chrome.tabs.remove(tab.id);
+                } catch (e) {
+                    // Tab already closed
+                }
+            }
             refreshBtn.disabled = false;
         }
     }

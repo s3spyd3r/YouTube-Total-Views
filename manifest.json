@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "YouTube Total Views",
   "version": "1.0",
-  "description": "Sums all video views from a YouTube channel using HTML parsing.",
+  "description": "Reads the total view count from a YouTube channel's /about page.",
   "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": [
     "https://www.youtube.com/*"

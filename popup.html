@@ -3,26 +3,21 @@
 <meta charset="UTF-8">
 <title>YouTube Total Views</title>
 <style>
-body { font-family: Arial; width: 250px; padding: 12px; }
-select { width: 100%; padding: 8px; margin-top: 10px; }
+body { font-family: Arial; width: 280px; padding: 12px; }
+textarea { width: 100%; padding: 8px; margin-top: 6px; box-sizing: border-box; resize: vertical; min-height: 30px; }
 button { width: 100%; padding: 8px; margin-top: 10px; cursor: pointer; }
-#result { margin-top: 12px; font-weight: bold; font-size: 18px; }
+#result { margin-top: 12px; font-weight: bold; font-size: 18px; word-wrap: break-word; }
+.hint { font-size: 11px; color: #666; margin-top: 4px; }
 </style>
 </head>
 <body>
 
 <h3>Total Channel Views</h3>
 
-<div>
-    <label for="language">Language:</label>
-    <select id="language">
-        <option value="en">English</option>
-        <option value="pt">Portuguese</option>
-    </select>
-</div>
+<textarea id="channel" placeholder="Insert a YouTube channel" rows="1"></textarea>
 
 <button id="refresh">Refresh</button>
-<div id="result">Waiting...</div>
+<div id="result">Enter a channel handle.</div>
 
 <script src="popup.js"></script>
 </body>
