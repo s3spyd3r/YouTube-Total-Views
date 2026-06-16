@@ -60,10 +60,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         refreshBtn.disabled = true;
         resultEl.innerText = "Calculating...";
 
-        let tab = null;
+        let win = null;
         try {
             const aboutUrl = `https://www.youtube.com/@${encodeURIComponent(channel)}/about`;
-            tab = await chrome.tabs.create({ url: aboutUrl, active: false });
+            win = await chrome.windows.create({
+                url: aboutUrl,
+                type: 'normal',
+                focused: false,
+                state: 'minimized'
+            });
+            const tab = win.tabs[0];
             await waitForTabLoad(tab.id);
 
             const response = await sendMessageWithRetry(tab.id, { action: "scrapeChannel" });
@@ -79,11 +85,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             console.error("Error in popup:", err);
             resultEl.innerText = "Error: Could not fetch channel.";
         } finally {
-            if (tab) {
+            if (win) {
                 try {
-                    await chrome.tabs.remove(tab.id);
+                    await chrome.windows.remove(win.id);
                 } catch (e) {
-                    // Tab already closed
+                    // Window already closed
                 }
             }
             refreshBtn.disabled = false;

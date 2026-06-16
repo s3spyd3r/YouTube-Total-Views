@@ -1,56 +1,50 @@
 # YouTube Total Views Chrome Extension
 
-This is a simple Chrome extension that calculates the total number of views for all videos on a YouTube channel's page.
-
-## How it Works
-
-The extension injects a content script into the YouTube page. When the user opens the extension's popup, the content script automatically scrolls down the page to load all the videos. As it scrolls, it finds all the view counts for each video, parses them, and adds them up. The final sum is then displayed in the extension's popup.
-
-## Images
+A simple Chrome extension that reads the total view count from a YouTube channel's `/about` page and shows it in the popup.
 
 <p float="left">
 	<img src="https://raw.githubusercontent.com/s3spyd3r/YouTube-Total-Views/refs/heads/main/Images/1.png" width="300">
 	<img src="https://raw.githubusercontent.com/s3spyd3r/YouTube-Total-Views/refs/heads/main/Images/2.png" width="300">
 </p>
 
+## How it Works
+
+Type a channel handle in the popup (e.g. `s3spyd3r`), click Refresh. The extension opens the channel's `/about` page in a hidden window, reads the total view count from YouTube's internal API, and displays it. The handle is remembered between sessions.
 
 ## Features
 
--   Calculates the total views for all videos on a channel page.
--   Handles channels with a large number of videos by scrolling down to load them all.
--   Supports view count formats in English (K/M/B for thousands/millions/billions) and Portuguese (mil/mi).
--   The user can select the language for view count parsing.
+- Reads the **total view count** directly from YouTube's internal API.
+- Works on any channel handle format: `@handle`, `channel/UC...`, `c/name`, `user/name`.
+- **Multi-language**: automatically picks up whatever language YouTube is showing (English, Portuguese, Spanish, French, Italian).
+- **Persisted handle**: the last channel you queried is remembered and pre-filled next time.
+- The work happens in a hidden window — your tab strip is never touched.
 
 ## How to Install and Run Locally
 
-To run this extension on your local machine, follow these steps:
+1. **Download the code**
+   - Clone this repository or download the source code as a ZIP file and extract it to a local folder.
 
-1.  **Download the code**
-    -   Clone this repository or download the source code as a ZIP file and extract it to a local folder.
+2. **Open Chrome's Extension Management Page**
+   - Open Google Chrome.
+   - Navigate to `chrome://extensions`.
 
-2.  **Open Chrome's Extension Management Page**
-    -   Open the Google Chrome browser.
-    -   Navigate to `chrome://extensions`.
+3. **Enable Developer Mode**
+   - In the top-right corner of the Extensions page, toggle "Developer mode" on.
 
-3.  **Enable Developer Mode**
-    -   In the top-right corner of the Extensions page, you will see a "Developer mode" toggle. Click it to enable Developer mode.
+4. **Load the Extension**
+   - Click the "Load unpacked" button.
+   - Select the folder where you saved the extension's code.
 
-4.  **Load the Extension**
-    -   Once Developer mode is enabled, you will see a new set of buttons appear.
-    -   Click on the "Load unpacked" button.
-    -   A file selection dialog will open. Navigate to the folder where you saved the extension's code and select it.
-
-5.  **Using the Extension**
-    -   The "YouTube Total Views" extension should now appear in your list of extensions.
-    -   Navigate to a YouTube channel's video page (e.g., `https://www.youtube.com/@Google/videos`).
-    -   Click on the extension's icon in the Chrome toolbar.
-    -   The popup will open and automatically start calculating the total views. Please wait as it scrolls down the page. The result will be displayed in the popup.
+5. **Use the Extension**
+   - Click the extension's icon in the Chrome toolbar.
+   - Type a channel handle and click **Refresh**.
 
 ## Project Structure
 
--   `manifest.json`: The manifest file for the Chrome extension. It defines the extension's name, version, permissions, and scripts.
--   `popup.html`: The HTML file for the extension's popup window.
--   `popup.js`: The JavaScript file for the popup. It handles user interaction and communication with the content script.
--   `content.js`: The content script that is injected into YouTube pages. It contains the logic for scraping the view counts.
--   `icon16.png`, `icon48.png`, `icon128.png`: The icons for the extension.
--   `README.md`: This file, providing documentation for the project.
+- `manifest.json`: The manifest file. Permissions: `activeTab`, `scripting`, `storage`.
+- `popup.html`: The HTML for the popup window.
+- `popup.js`: JavaScript for the popup. Handles input, opens the hidden window, persists the channel.
+- `content.js`: Content script injected into YouTube pages. Reads the view count.
+- `icon16.png`, `icon48.png`, `icon128.png`: Icons.
+- `README.md`: This file.
+- `AGENTS.md`: Developer documentation.
