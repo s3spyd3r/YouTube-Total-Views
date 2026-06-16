@@ -21,35 +21,23 @@ function findViewCountInBrowseResponse(data) {
     return null;
 }
 
+let scriptLoaded = false;
+let scriptError = false;
+
 (function injectFetchBridge() {
     if (window.__yttvBridgeInjected) return;
     window.__yttvBridgeInjected = true;
     const script = document.createElement('script');
-    script.textContent = `
-        (function() {
-            if (window.__yttvFetchWrapped) return;
-            window.__yttvFetchWrapped = true;
-            const originalFetch = window.fetch;
-            window.fetch = function() {
-                const args = arguments;
-                return Promise.resolve(originalFetch.apply(this, args)).then(function(response) {
-                    try {
-                        const url = typeof args[0] === 'string' ? args[0] : (args[0] && args[0].url);
-                        if (url && url.indexOf('/youtubei/v1/browse') !== -1) {
-                            const cloned = response.clone();
-                            cloned.json().then(function(data) {
-                                document.dispatchEvent(new CustomEvent('YTTV_BROWSE_RESPONSE', { detail: { data: data } }));
-                            }).catch(function() {});
-                        }
-                    } catch (e) {}
-                    return response;
-                });
-            };
-        })();
-    `;
-    const target = document.head || document.documentElement || document;
-    target.appendChild(script);
-    script.remove();
+    script.src = chrome.runtime.getURL('injected.js');
+    script.onload = () => {
+        scriptLoaded = true;
+        script.remove();
+    };
+    script.onerror = () => {
+        scriptError = true;
+        script.remove();
+    };
+    (document.head || document.documentElement || document).appendChild(script);
 })();
 
 let interceptedViewCountText = null;
@@ -72,6 +60,23 @@ function waitForViewCountText(timeoutMs = 8000) {
             clearTimeout(timeoutId);
             resolve(text);
         });
+    });
+}
+
+function waitForScriptLoaded(timeoutMs = 3000) {
+    if (scriptLoaded || scriptError) return Promise.resolve();
+    return new Promise(resolve => {
+        const startTime = Date.now();
+        const check = () => {
+            if (scriptLoaded || scriptError) {
+                resolve();
+            } else if (Date.now() - startTime > timeoutMs) {
+                resolve();
+            } else {
+                setTimeout(check, 20);
+            }
+        };
+        check();
     });
 }
 
@@ -147,6 +152,7 @@ function findViewsInPage() {
 }
 
 async function scrapeChannelViews(sendResponse) {
+    await waitForScriptLoaded();
     const apiText = await waitForViewCountText();
     if (apiText) {
         sendResponse({ totalViews: parseViews(apiText), source: 'api' });
